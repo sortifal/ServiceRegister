@@ -30,8 +30,8 @@ if [ -z "$PORT" ]; then
 fi
 
 # 4. Host Rule
-read -p "Enter Host Rule [${NAME}.yourdomain.com]: " INPUT_HOST
-HOST_RULE=${INPUT_HOST:-${NAME}.yourdomain.com}
+read -p "Enter Host Rule [${NAME}.vidoks.fr]: " INPUT_HOST
+HOST_RULE=${INPUT_HOST:-${NAME}.vidoks.fr}
 
 # 5. Register
 echo "--------------------------------------------------"
