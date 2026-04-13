@@ -1,23 +1,19 @@
-#!/bin/bash
+#!/bin/sh
 
 # Configuration
 CONSUL_ADDR="http://192.168.1.87:8500"
 
-# --- Auto-detect IP ---
-# Try to find the IP on the 192.168.1.x range specifically.
-# If not found, fall back to the first available IP that isn't localhost.
-DEFAULT_IP=$(ip -4 addr show | grep -oP 'inet 192\.168\.1\.\d+' | head -n 1 | awk '{print $2}')
-if [ -z "$DEFAULT_IP" ]; then
-    DEFAULT_IP=$(hostname -I | awk '{print $1}')
-fi
+# --- Auto-detect IP (BusyBox Compatible) ---
+# Gets the IP of the interface used for the default gateway
+DEFAULT_IP=$(ip route get 1 | awk '{print $7; exit}')
 
 # --- Interactive Inputs ---
 
-# 1. Service Name (Default: system hostname)
+# 1. Service Name
 read -p "Enter Service Name [$(hostname)]: " INPUT_NAME
 NAME=${INPUT_NAME:-$(hostname)}
 
-# 2. Service IP (Default: Auto-detected IP)
+# 2. Service IP
 read -p "Enter Service IP [${DEFAULT_IP}]: " INPUT_IP
 IP=${INPUT_IP:-$DEFAULT_IP}
 
@@ -26,19 +22,18 @@ if [ -z "$IP" ]; then
     exit 1
 fi
 
-# 3. Service Port (Required)
+# 3. Service Port
 read -p "Enter Service Port: " PORT
 if [ -z "$PORT" ]; then
     echo "Error: Port is required."
     exit 1
 fi
 
-# 4. Host Rule (Default: SERVICENAME.vidoks.fr)
-read -p "Enter Host Rule (e.g. service.example.com) [${NAME}.vidoks.fr]: " INPUT_HOST
-HOST_RULE=${INPUT_HOST:-${NAME}.vidoks.fr}
+# 4. Host Rule
+read -p "Enter Host Rule (e.g. service.example.com) [${NAME}.yourdomain.com]: " INPUT_HOST
+HOST_RULE=${INPUT_HOST:-${NAME}.yourdomain.com}
 
 # --- Construct Payload ---
-# Tags configured for Traefik v3 + HTTPS + LE
 PAYLOAD=$(cat <<EOF
 {
   "Name": "${NAME}",
@@ -65,14 +60,4 @@ EOF
 echo "--------------------------------------------------"
 echo "Registering Service:"
 echo "  Name:    ${NAME}"
-echo "  Address: ${IP}:${PORT}"
-echo "  Host:    ${HOST_RULE}"
-echo "--------------------------------------------------"
-
-curl -s -X PUT -d "${PAYLOAD}" "${CONSUL_ADDR}/v1/agent/service/register"
-
-if [ $? -eq 0 ]; then
-    echo "Success! Service registered to Consul."
-else
-    echo "Error: Failed to contact Consul."
-fi
+echo "
