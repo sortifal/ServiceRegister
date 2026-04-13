@@ -33,13 +33,12 @@ if [ -z "$PORT" ]; then
     exit 1
 fi
 
-# 4. Host Rule (Default: SERVICENAME.yourdomain.com)
-# Change 'yourdomain.com' below if your domain is different
-read -p "Enter Host Rule (e.g. service.example.com) [${NAME}.yourdomain.com]: " INPUT_HOST
-HOST_RULE=${INPUT_HOST:-${NAME}.yourdomain.com}
+# 4. Host Rule (Default: SERVICENAME.vidoks.fr)
+read -p "Enter Host Rule (e.g. service.example.com) [${NAME}.vidoks.fr]: " INPUT_HOST
+HOST_RULE=${INPUT_HOST:-${NAME}.vidoks.fr}
 
 # --- Construct Payload ---
-# Tags configured for Traefik v3 + HTTPS + Cloudflare
+# Tags configured for Traefik v3 + HTTPS + LE
 PAYLOAD=$(cat <<EOF
 {
   "Name": "${NAME}",
@@ -50,7 +49,7 @@ PAYLOAD=$(cat <<EOF
     "traefik.http.routers.${NAME}.rule=Host(\`${HOST_RULE}\`)",
     "traefik.http.routers.${NAME}.entrypoints=websecure",
     "traefik.http.routers.${NAME}.tls=true",
-    "traefik.http.routers.${NAME}.tls.certresolver=cloudflare",
+    "traefik.http.routers.${NAME}.tls.certresolver=le",
     "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
   ],
   "Check": {
