@@ -50,7 +50,7 @@ PAYLOAD=$(cat <<EOF
     "traefik.http.routers.${NAME}.rule=Host(\`${HOST_RULE}\`)",
     "traefik.http.routers.${NAME}.entrypoints=websecure",
     "traefik.http.routers.${NAME}.tls=true",
-    "traefik.http.routers.${NAME}.tls.certresolver=cloudflare",
+    "traefik.http.routers.${NAME}.tls.certresolver=le",
     "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
   ]
 }
