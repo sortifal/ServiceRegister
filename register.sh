@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# PAUSE: Essential for 'curl | bash' to allow terminal input attachment
+sleep 1
+
 # Configuration
 CONSUL_ADDR="http://192.168.1.87:8500"
 
@@ -36,8 +39,8 @@ echo "Registering: ${NAME} at ${IP}:${PORT}"
 echo "Host: ${HOST_RULE}"
 echo "--------------------------------------------------"
 
-# We use a heredoc for JSON to be safe and clean
-read -r -d '' PAYLOAD <<EOF
+# Construct JSON
+PAYLOAD=$(cat <<EOF
 {
   "Name": "${NAME}",
   "Address": "${IP}",
@@ -52,6 +55,7 @@ read -r -d '' PAYLOAD <<EOF
   ]
 }
 EOF
+)
 
 curl -s -X PUT -d "$PAYLOAD" "${CONSUL_ADDR}/v1/agent/service/register"
 
