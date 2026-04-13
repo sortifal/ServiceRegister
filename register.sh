@@ -44,7 +44,7 @@ PAYLOAD=$(cat <<EOF
     "traefik.http.routers.${NAME}.rule=Host(\`${HOST_RULE}\`)",
     "traefik.http.routers.${NAME}.entrypoints=websecure",
     "traefik.http.routers.${NAME}.tls=true",
-    "traefik.http.routers.${NAME}.tls.certresolver=le",
+    "traefik.http.routers.${NAME}.tls.certresolver=cloudflare",
     "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
   ],
   "Check": {
@@ -60,4 +60,14 @@ EOF
 echo "--------------------------------------------------"
 echo "Registering Service:"
 echo "  Name:    ${NAME}"
-echo "
+echo "  Address: ${IP}:${PORT}"
+echo "  Host:    ${HOST_RULE}"
+echo "--------------------------------------------------"
+
+curl -s -X PUT -d "${PAYLOAD}" "${CONSUL_ADDR}/v1/agent/service/register"
+
+if [ $? -eq 0 ]; then
+    echo "Success! Service registered to Consul."
+else
+    echo "Error: Failed to contact Consul."
+fi
