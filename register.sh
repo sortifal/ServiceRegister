@@ -4,7 +4,7 @@
 sleep 1
 
 # Configuration
-CONSUL_ADDR="http://192.168.1.87:8500"
+CONSUL_ADDR="http://192.168.1.34:8500"
 
 # Auto-detect IP
 DEFAULT_IP=$(ip route get 1 | awk '{print $7; exit}')
