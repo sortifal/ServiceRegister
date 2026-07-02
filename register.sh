@@ -32,8 +32,8 @@ fi
 # 4. Protocol / Routing Selection
 echo "--------------------------------------------------"
 echo "Select Protocol Type for Traefik:"
-echo "1) HTTP      (Port 80, uses Host rule)"
-echo "2) HTTPS     (Port 443, uses Host rule + Let's Encrypt)"
+echo "1) HTTP      (Port 80, uses Host rule + WS Support)"
+echo "2) HTTPS     (Port 443, uses Host rule + Let's Encrypt + WS Support)"
 echo "3) UDP       (For TeamSpeak Voice, uses port entrypoint only)"
 echo "4) TCP       (For TeamSpeak Files/Raw TCP, uses HostSNI wildcard)"
 echo "--------------------------------------------------"
@@ -43,7 +43,7 @@ read -p "Choose an option [1-4]: " PROTO_CHOICE
 TAGS=""
 
 case $PROTO_CHOICE in
-    2) # HTTPS / Websecure
+    2) # HTTPS / Websecure (With WebSocket Upgrade support built-in)
         read -p "Enter Host Rule [${NAME}.vidoks.fr]: " INPUT_HOST
         HOST_RULE=${INPUT_HOST:-${NAME}.vidoks.fr}
         
@@ -53,6 +53,9 @@ case $PROTO_CHOICE in
     "traefik.http.routers.${NAME}.entrypoints=websecure",
     "traefik.http.routers.${NAME}.tls=true",
     "traefik.http.routers.${NAME}.tls.certresolver=le",
+    "traefik.http.middlewares.${NAME}-ws.headers.customrequestheaders.Upgrade=websocket",
+    "traefik.http.middlewares.${NAME}-ws.headers.customrequestheaders.Connection=Upgrade",
+    "traefik.http.routers.${NAME}.middlewares=${NAME}-ws",
     "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
 EOF
 )
@@ -85,7 +88,7 @@ EOF
 )
         ;;
 
-    1|*) # Default to HTTP / Web
+    1|*) # Default to HTTP / Web (With WebSocket Upgrade support built-in)
         read -p "Enter Host Rule [${NAME}.vidoks.fr]: " INPUT_HOST
         HOST_RULE=${INPUT_HOST:-${NAME}.vidoks.fr}
         
@@ -93,6 +96,9 @@ EOF
     "traefik.enable=true",
     "traefik.http.routers.${NAME}.rule=Host(\`${HOST_RULE}\`)",
     "traefik.http.routers.${NAME}.entrypoints=web",
+    "traefik.http.middlewares.${NAME}-ws.headers.customrequestheaders.Upgrade=websocket",
+    "traefik.http.middlewares.${NAME}-ws.headers.customrequestheaders.Connection=Upgrade",
+    "traefik.http.routers.${NAME}.middlewares=${NAME}-ws",
     "traefik.http.services.${NAME}.loadbalancer.server.port=${PORT}"
 EOF
 )
